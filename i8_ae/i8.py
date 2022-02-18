@@ -9,7 +9,7 @@ class i8():
 	# link shortener
 	def short(self, url, password=None):
 		if self.key == None:
-			raise Exception("Please add API KEY first => i8.add(key)")
+			raise Exception("Please add API KEY first: i8 = i8(key)")
 			
 		else:
 			headers = {
