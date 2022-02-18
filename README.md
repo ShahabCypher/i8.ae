@@ -31,10 +31,10 @@ pip install i8.ae
 
 ## Example Usage
 ```py
-from i8 import i8
+from i8_ae import i8
 
 # adding api key
-i8.add("YOUR_API_KEY")
+i8 = i8("YOUR_API_KEY")
 
 # link shortener
 short = i8.short("https://github.com/")
