@@ -2,24 +2,6 @@ import sys
 
 import json
 
-import subprocess
-
-import pkg_resources
-
-# check if modules are installed
-
-required = {'requests'}
-
-installed = {pkg.key for pkg in pkg_resources.working_set}
-
-missing = required - installed
-
-# install missing modules
-
-if missing:
-
-	python = sys.executable	subprocess.check_call([python, '-m', 'pip', 'install', *missing],  stdout=subprocess.DEVNULL)
-
 import requests
 
 class i8():
