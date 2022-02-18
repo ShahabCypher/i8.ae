@@ -1,1 +1,1 @@
-from i8 import i8
+from i8_ae.i8 import i8
