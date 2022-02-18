@@ -46,5 +46,5 @@ print(short) # Output: https://i8.ae/WSRdf
 ```
 
 ## Links
-- [PyPI]()
+- [PyPI](https://pypi.org/project/i8.ae/)
 - [About me](https://github.com/ShahabCypher/ShahabCypher/)
