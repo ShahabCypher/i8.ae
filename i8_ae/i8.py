@@ -6,15 +6,7 @@ import requests
 
 class i8():
 
-	def __init__(self):
-
-		self.key = None
-
-	
-
-	# add api key
-
-	def add(self, api_key):
+	def __init__(self, api_key):
 
 		self.key = api_key
 
