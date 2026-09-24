@@ -1,52 +1,87 @@
 import requests
 
+BASE_URL = 'https://i8.ae'
+
+
+class I8Error(Exception):
+    def __init__(self, message, error=None, status=None):
+        super().__init__(message)
+        self.error = error
+        self.status = status
+
+
+class AuthError(I8Error):
+    pass
+
+
+class RateLimitError(I8Error):
+    def __init__(self, message, reset=None, **kwargs):
+        super().__init__(message, **kwargs)
+        self.reset = reset
+
+
+class RequestError(I8Error):
+    pass
+
+
+class APIError(I8Error):
+    pass
+
+
 class i8():
-	def __init__(self, api_key):
-		self.key = api_key
+    def __init__(self, api_key, timeout=10):
+        if not api_key:
+            raise ValueError('api_key is required: i8("YOUR_API_KEY")')
 
-	# link shortener
-	def short(self, url, password=None):
-		if self.key == None:
-			raise Exception("Please add API KEY first: i8 = i8(key)")
+        self.key = str(api_key).strip()
+        self.timeout = timeout
+        # one shared Session (connection reuse). requests.Session is not
+        # documented thread-safe; if cookie-less GETs race, switch to threading.local.
+        self.session = requests.Session()
 
-		else:
-			# API requires "Bearer <key>" (https://i8.ae/developers)
-			key = str(self.key)
-			if not key.lower().startswith("bearer "):
-				key = "Bearer " + key
+        token = self.key
+        if not token.lower().startswith('bearer '):
+            token = 'Bearer ' + token
+        self.session.headers['Authorization'] = token
 
-			headers = {
-				'Authorization': key,
-				'Content-Type': 'application/json'
-			}
-			
-			data = {
-				'url': url
-			}
-			
-			# adding password if exists
-			if password != None:
-				data['password'] = password
-			
-			# sending request to i8.ae
-			url_req = requests.post(
-				'https://i8.ae/api/url/add',
-				json=data,
-				headers=headers
-			)
-			
-			# getting i8.ae response
-			try:
-				response = url_req.json()
-			except ValueError:
-				# non-JSON body, e.g. hitting the 30 req/min rate limit
-				raise Exception("HTTP %s: %s" % (url_req.status_code, url_req.text[:200]))
+    def short(self, url, password=None, **params):
+        data = {'url': url, **params}
+        if password is not None:
+            data['password'] = password
 
-			if response['error'] != 0:
-				message = response['message']
-				raise Exception(message)
-			
-			shorted = response['shorturl']
-			
-			# return shorted link
-			return shorted
+        try:
+            res = self.session.post(
+                BASE_URL + '/api/url/add',
+                json=data,
+                timeout=self.timeout,
+            )
+        except requests.RequestException as exc:
+            raise RequestError(str(exc)) from exc
+
+        if res.status_code in (401, 403):
+            raise AuthError(res.text[:200] or 'invalid API key', status=res.status_code)
+
+        if res.status_code == 429:
+            raise RateLimitError(
+                res.text[:200] or 'rate limited',
+                reset=res.headers.get('X-RateLimit-Reset'),
+                status=429,
+            )
+
+        try:
+            body = res.json()
+        except ValueError:
+            raise APIError(
+                'HTTP %s: %s' % (res.status_code, res.text[:200]),
+                status=res.status_code,
+            )
+
+        shorted = body.get('shorturl')
+        if not res.ok or body.get('error', 0) != 0 or not shorted:
+            raise APIError(
+                body.get('message') or res.text[:200],
+                error=body.get('error'),
+                status=res.status_code,
+            )
+
+        return shorted
