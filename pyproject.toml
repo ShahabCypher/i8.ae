@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "i8.ae"
-version = "1.0.0"
+version = "2.1.0"
 description = "Python client for the i8.ae URL shortener API"
 readme = "README.md"
 license = { file = "LICENSE" }
