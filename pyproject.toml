@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "i8.ae"
+version = "1.0.0"
+description = "Python client for the i8.ae URL shortener API"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+dependencies = ["requests>=2.20"]
+
+[project.urls]
+Homepage = "https://i8.ae"
+Documentation = "https://i8.ae/developers"
+
+[tool.setuptools]
+packages = ["i8_ae"]
